@@ -6,5 +6,6 @@ A simulation of the card game *War*
 
 <code>
 javac *.java
+
 java Run
 </code>

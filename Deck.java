@@ -5,38 +5,47 @@ public class Deck{
   int size, numDecks;
   ArrayList<Card> cards;
   String[] suits = {"Hearts", "Clubs", "Spades", "Diamonds"};
-  String[] value = {"Ace" , "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Jack", "Queen", "King"};
   
   
   public Deck(int n){
-    int i = 0;
     numDecks = n;
     size = n*52;
     cards = new ArrayList<Card>(size);
     spawnCards();
-    while(i<100){
-      shuffle();
-      i++;
-    }
+    System.out.println("\n Fresh Deck");
+    printDeck(cards);
+    
+    shuffle(cards);
+    System.out.println("\n Shuffled Deck");
+    printDeck(cards);
   } 
   
+  void printDeck(ArrayList<Card> deck){
+    for (int i = 0; i < deck.size(); i ++){
+      System.out.print(deck.get(i) + " ");
+    }
+  }
+
   void spawnCards(){
     for(int k = 0; k < numDecks; k++){
       for(int i = 0; i<4; i++){
         for(int j = 0; j<13; j++){
-          cards.add(new Card(suits[i],value[j]));
+          cards.add(new Card(suits[i],j+1));
         }
       }
     }
   }
   
-  void shuffle(){
+  void shuffle(ArrayList<Card> deck){
+    boolean shuffled = false;
+    Card lastCard = deck.get(deck.size()-1);
     Random rand = new Random();
-    for (int i = 0; i<size; i++){
-      int x = rand.nextInt(51);
-      Card hold = cards.get(x);
-      cards.set(x, cards.get(i));
-      cards.set(i, hold);
+    int i = 0;
+    while(!shuffled){
+      if(deck.get(0) == lastCard){shuffled = true;}
+      int x = rand.nextInt(deck.size())+1;
+      deck.add(x,deck.get(0));
+      deck.remove(0);
     }
   }
 

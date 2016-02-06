@@ -7,9 +7,7 @@ import java.util.Random;
 public class Table{
 	/* these are the valid ranks and suits (both represented as Strings) */
 	/* (they may be useful to you.  You do not need to use them though)  */
-	
-	ArrayList<Card> redPlay = new ArrayList<>();
-	ArrayList<Card> bluePlay = new ArrayList<>();
+
 	int turns, rWin, bWin, war = 0;
 
 
@@ -61,17 +59,19 @@ public class Table{
 		while(true){
 			if(red.playerHand.size() == 0 || blue.playerHand.size() == 0 || turns >= 10000) break;
 
-			redPlay.add(red.drawCard());
-			bluePlay.add(blue.drawCard());
-			System.out.println("\nRED  " + redPlay.get(0));
-			System.out.println("BLUE " + bluePlay.get(0));
+			red.drawCard();
+			blue.drawCard();
+			System.out.print("\nRED  ");
+			red.printPlay();
+			System.out.print("\nBLUE ");
+			blue.printPlay();
 
-			if (redPlay.get(0).getRank() - bluePlay.get(0).getRank() > 0){ // red win
-				returnWinToDeck(red);
+			if (red.lastPlay() > blue.lastPlay()){ // red win
+				returnWinToDeck(red,blue);
 				rWin++;
 				System.out.println("red win");
-			}else if(redPlay.get(0).getRank() - bluePlay.get(0).getRank() < 0){ // blue win
-				returnWinToDeck(blue);
+			}else if(red.lastPlay() < blue.lastPlay()){ // blue win
+				returnWinToDeck(blue,red);
 				bWin++;
 				System.out.println("blue win");
 			}else{
@@ -79,26 +79,17 @@ public class Table{
 				thisMeansWar(red, blue);
 				war++;
 			}
-				
-				/*                                      //Returns cards back to deck
-				red.pushLast((Card)redPlay.get(0));
-				blue.pushLast((Card)bluePlay.get(0));
-				redPlay.clear();
-				bluePlay.clear();
-				draw++;
-				*/
-			
 			turns++;
 		}
 	}
 
 	int findHighest(Card[] c){
 		Card highest = null;
-		for(int i = 0; i<3; i++){
+		for(int i = 0; i < c.length; i++){
 			if(highest == null){
 				highest = c[i];
 			}else{
-				if(c[i].cardRank > highest.cardRank){
+				if(c[i].getRank() > highest.getRank()){
 					highest = c[i];
 				}
 			}
@@ -106,46 +97,53 @@ public class Table{
 		return highest.getRank();
 	}
 
-	void returnWinToDeck(Player p){
-		Random rand = new Random();
-		Boolean TF = rand.nextBoolean();
-    
-    if (TF == true){
-    	p.pushLast((Card)redPlay.get(0));
-			p.pushLast((Card)bluePlay.get(0));
-    }else{
-    	p.pushLast((Card)bluePlay.get(0));   
-    	p.pushLast((Card)redPlay.get(0));
-    }
-		
-		
-		redPlay.clear();
-		bluePlay.clear();
+	void returnWinToDeck(Player w, Player l){
+		w.returnPlayToHand();
+		while(l.playSize() > 0){
+			w.pushLast(l.giveCard());
+		}
 	}
 
 	void thisMeansWar(Player red, Player blue){
-		while(true){
-			for (int i = 0; i <= 2; i++){
-				redPlay.add(red.drawCard());
-				bluePlay.add(blue.drawCard());
-			}
-			int j = redPlay.size();
-			Card[] warRed = {redPlay.get(j-1),redPlay.get(j-2),redPlay.get(j-3)};
-			Card[] warBlue = {bluePlay.get(j-1),bluePlay.get(j-2),bluePlay.get(j-3)};
-			
-			if(findHighest(warRed) - findHighest(warBlue) > 0){
-				returnWinToDeck(red);
+		int warBet = (Math.min(red.handSize(), blue.handSize()) < 3) ? Math.min(red.handSize(), blue.handSize()) : 3;
+
+		if (warBet == 0){
+			if (blue.handSize() == 0){
+				returnWinToDeck(red,blue);
 				rWin++;
-				System.out.println("red win WAR");
-				break;
-			}else if(findHighest(warRed) - findHighest(warBlue) < 0){
-				returnWinToDeck(red);
-				bWin++;
-				System.out.println("blue win WAR");
-				break;
-			}else{
-				thisMeansWar(red, blue);
+				System.out.println("red win WAR due to blue running out of cards.");
+				return;
 			}
+			if (red.handSize() == 0){
+				returnWinToDeck(blue,red);
+				bWin++;
+				System.out.println("blue win WAR due to red running out of cards.");
+				return;
+			}
+		}
+
+		for (int i = 0; i < warBet; i++){
+			red.drawCard();
+			blue.drawCard();
+		}
+
+		System.out.println("red play");
+		red.printPlay();
+		System.out.println("\nblue play");
+		blue.printPlay();
+		System.out.println();
+
+		if(red.lastPlay() > blue.lastPlay()){
+			returnWinToDeck(red,blue);
+			rWin++;
+			System.out.println("red win WAR");
+		}else if(red.lastPlay() < blue.lastPlay()){
+			returnWinToDeck(blue,red);
+			bWin++;
+			System.out.println("blue win WAR");
+		}else{
+			System.out.println("WAR!");
+			thisMeansWar(red, blue);
 		}
 	}
 }
